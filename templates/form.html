@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>BOOK A TABLE</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/icon.jpeg' %}" rel="icon">
+  <link href="{% static 'assets/img/logo.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&family=Satisfy&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+</head>
+
+<body class="index-page">
+
+<header id="header" class="header fixed-top">
+  <div class="topbar d-flex align-items-center">
+    <div class="container d-flex justify-content-start justify-content-md-between">
+      <div class="contact-info d-flex align-items-center">
+        <i class="bi bi-phone d-flex align-items-center d-none d-lg-block"><span style="color:black">+91 7070776890</span></i>
+        <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span style="color:black">Mon-Sat: 11:00 AM - 08:00 PM</span></i>
+      </div>
+    </div>
+  </div><!-- End Top Bar -->
+
+  <div class="branding d-flex align-items-center">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+      <a href="{% url 'home' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'assets/img/icon.jpeg' %}" alt="">
+        <h1 class="sitename" style="color:black">Babu's kitchen</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="{% url 'home' %}#home">Home</a></li>
+          <li><a href="{% url 'home' %}#about">About</a></li>
+          <li><a href="{% url 'home' %}#menu">Menu</a></li>
+          <li><a href="{% url 'home' %}#specials">Specials</a></li>
+          <li><a href="{% url 'home' %}#gallery">Gallery</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="book-a-table" class="book-a-table section">
+    <div class="container section-title" data-aos="flip-up">
+      <div><span>Book a</span> <span class="description-title">Table</span></div>
+    </div>
+
+    <div class="container">
+      <div class="row g-0" data-aos="flip-up" data-aos-delay="100">
+
+        <div class="col-lg-4 reservation-img" style="background-image: url({% static 'assets/img/reservation.jpg' %});"></div>
+
+        <div class="col-lg-8 d-flex align-items-center reservation-form-bg" data-aos="fade-up" data-aos-delay="200">
+
+          <form action="{% url 'form' %}" method="POST" role="form" class="w-100 p-3">
+            {% csrf_token %}
+
+            <!-- Show Django messages inline -->
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-2" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            <div class="row gy-4 mt-2">
+              <div class="col-lg-4 col-md-6">
+                <input type="text" class="form-control" placeholder="Your Name" name="name" required>
+              </div>
+              <div class="col-lg-4 col-md-6">
+                <input type="email" class="form-control" placeholder="Your Email" name="email" required>
+              </div>
+              <div class="col-lg-4 col-md-6">
+                <input type="text" class="form-control" placeholder="Contact No." name="phone" required>
+              </div>
+              <div class="col-lg-4 col-md-6">
+                <input type="date" name="date" class="form-control" required>
+              </div>
+              <div class="col-lg-4 col-md-6">
+                <input type="time" name="time" class="form-control" required>
+              </div>
+              <div class="col-lg-4 col-md-6">
+                <input type="number" name="people" class="form-control" placeholder="# of people" required>
+              </div>
+            </div>
+
+            <div class="form-group mt-3">
+              <textarea class="form-control" name="message" rows="5" placeholder="Message (optional)"></textarea>
+            </div>
+
+            <div class="text-center mt-3">
+              <button type="submit" class="btn btn-primary">Book a Table</button>
+            </div>
+          </form>
+
+        </div><!-- End Reservation Form -->
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="footer" class="footer dark-background">
+  <div class="container" data-aos="fade-up">
+    <div class="row gy-3">
+      <div class="col-lg-3 col-md-6 d-flex">
+        <i class="bi bi-geo-alt icon"></i>
+        <div class="address">
+          <h4>Address</h4>
+          <p>A801 Adam Street</p>
+          <p>New Delhi</p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6 d-flex">
+        <i class="bi bi-telephone icon"></i>
+        <div>
+          <h4>Contact</h4>
+          <p>
+            <strong>Phone:</strong> <span>+91 7070776890</span><br>
+            <strong>Email:</strong> <span>babu123@gmail.com</span><br>
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6 d-flex">
+        <i class="bi bi-clock icon"></i>
+        <div>
+          <h4>Opening Hours</h4>
+          <p>
+            <strong>Mon-Sat:</strong> <span>11AM - 8PM</span><br>
+            <strong>Sunday</strong>: <span>Closed</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <h4>Follow Us</h4>
+        <div class="social-links d-flex">
+          <a href="https://twitter.com" target="_blank" class="twitter"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://facebook.com" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
+          <a href="https://instagram.com" target="_blank" class="instagram"><i class="bi bi-instagram"></i></a>
+          <a href="https://linkedin.com" target="_blank" class="linkedin"><i class="bi bi-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container copyright text-center mt-4">
+    <p>© <span>Copyright</span> <strong class="px-1 sitename">Babu's kitchen</strong> <span>All Rights Reserved</span></p>
+  </div>
+</footer>
+
+<!-- Scroll Top -->
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+<!-- Preloader -->
+<div id="preloader"></div>
+
+<!-- Vendor JS Files -->
+<script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+<script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+<script src="{% static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
+<script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+<script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+<!-- Main JS File -->
+<script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+</html>
