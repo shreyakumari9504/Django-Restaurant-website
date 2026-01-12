@@ -32,33 +32,70 @@
 <body class="index-page">
 
 <header id="header" class="header fixed-top">
-  <div class="topbar d-flex align-items-center">
-    <div class="container d-flex justify-content-start justify-content-md-between">
-      <div class="contact-info d-flex align-items-center">
-        <i class="bi bi-phone d-flex align-items-center d-none d-lg-block"><span style="color:black">+91 7070776890</span></i>
-        <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span style="color:black">Mon-Sat: 11:00 AM - 08:00 PM</span></i>
-      </div>
-    </div>
-  </div><!-- End Top Bar -->
-
   <div class="branding d-flex align-items-center">
     <div class="container position-relative d-flex align-items-center justify-content-between">
+
+      <!-- LOGO -->
       <a href="{% url 'home' %}" class="logo d-flex align-items-center">
         <img src="{% static 'assets/img/icon.jpeg' %}" alt="">
-        <h1 class="sitename" style="color:black">Babu's kitchen</h1>
+        <h1 class="sitename ms-2" style="color:orange;">Babu's Kitchen</h1>
       </a>
 
+      <!-- NAVBAR -->
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="{% url 'home' %}#home">Home</a></li>
-          <li><a href="{% url 'home' %}#about">About</a></li>
-          <li><a href="{% url 'home' %}#menu">Menu</a></li>
-          <li><a href="{% url 'home' %}#specials">Specials</a></li>
-          <li><a href="{% url 'home' %}#gallery">Gallery</a></li>
+          <li><a href="{% url 'home' %}#hero">Home</a></li>
+          <li><a href="{% url 'starterpage' %}">Menu</a></li>
           <li><a href="{% url 'contact' %}">Contact</a></li>
+
+          <!-- ✨ AI RECOMMEND BUTTON -->
+          <li><a href="{% url 'ai_recommend' %}">AI Recommend ✨</a></li>
+
+          <!-- 👤 USERNAME PILL DROPDOWN -->
+          {% if user.is_authenticated %}
+          <li class="dropdown">
+            <a href="#"
+               class="btn btn-sm "
+               style="border-radius:20px;">
+              {{ user.username }}
+              <i class="bi bi-chevron-down ms-1"></i>
+            </a>
+
+            <ul>
+              {% if user.is_staff %}
+              <li>
+                <a href="{% url 'admin_dashboard' %}">
+                  Admin Dashboard
+                </a>
+              </li>
+              {% else %}
+              <li>
+                <a href="{% url 'user_dashboard' %}">
+                  My Dashboard
+                </a>
+              </li>
+              {% endif %}
+
+              <li>
+                <a href="{% url 'logout' %}">Logout</a>
+              </li>
+            </ul>
+          </li>
+
+          {% else %}
+          <li>
+            <a href="{% url 'login' %}"
+               class="btn btn-sm "
+               style="border-radius:20px;">
+              Login
+            </a>
+          </li>
+          {% endif %}
         </ul>
+
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
+
     </div>
   </div>
 </header>
@@ -77,47 +114,72 @@
         <div class="col-lg-8 d-flex align-items-center reservation-form-bg" data-aos="fade-up" data-aos-delay="200">
 
           <form action="{% url 'form' %}" method="POST" role="form" class="w-100 p-3">
-            {% csrf_token %}
+  {% csrf_token %}
 
-            <!-- Show Django messages inline -->
-            {% if messages %}
-              {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-2" role="alert">
-                  {{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endfor %}
-            {% endif %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-2">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
 
-            <div class="row gy-4 mt-2">
-              <div class="col-lg-4 col-md-6">
-                <input type="text" class="form-control" placeholder="Your Name" name="name" required>
-              </div>
-              <div class="col-lg-4 col-md-6">
-                <input type="email" class="form-control" placeholder="Your Email" name="email" required>
-              </div>
-              <div class="col-lg-4 col-md-6">
-                <input type="text" class="form-control" placeholder="Contact No." name="phone" required>
-              </div>
-              <div class="col-lg-4 col-md-6">
-                <input type="date" name="date" class="form-control" required>
-              </div>
-              <div class="col-lg-4 col-md-6">
-                <input type="time" name="time" class="form-control" required>
-              </div>
-              <div class="col-lg-4 col-md-6">
-                <input type="number" name="people" class="form-control" placeholder="# of people" required>
-              </div>
-            </div>
+  <div class="row gy-4 mt-2">
 
-            <div class="form-group mt-3">
-              <textarea class="form-control" name="message" rows="5" placeholder="Message (optional)"></textarea>
-            </div>
+  
+    <div class="col-lg-4 col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        name="name"
+        value="{{ request.user.username }}"
+        readonly
+      >
+    </div>
 
-            <div class="text-center mt-3">
-              <button type="submit" class="btn btn-primary">Book a Table</button>
-            </div>
-          </form>
+    <!-- Email (auto-filled, readonly) -->
+    <div class="col-lg-4 col-md-6">
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        value="{{ request.user.email }}"
+        readonly
+      >
+    </div>
+
+    <!-- Phone -->
+    <div class="col-lg-4 col-md-6">
+      <input type="text" class="form-control" placeholder="Contact No." name="phone" required>
+    </div>
+
+    <!-- Date -->
+    <div class="col-lg-4 col-md-6">
+      <input type="date" name="date" class="form-control" required>
+    </div>
+
+    <!-- Time -->
+    <div class="col-lg-4 col-md-6">
+      <input type="time" name="time" class="form-control" required>
+    </div>
+
+    <!-- People -->
+    <div class="col-lg-4 col-md-6">
+      <input type="number" name="people" class="form-control" placeholder="# of people" required>
+    </div>
+
+  </div>
+
+  <div class="form-group mt-3">
+    <textarea class="form-control" name="message" rows="5" placeholder="Message (optional)"></textarea>
+  </div>
+
+  <div class="text-center mt-3">
+    <button type="submit" class="btn btn-primary">Book a Table</button>
+  </div>
+</form>
+
 
         </div><!-- End Reservation Form -->
       </div>

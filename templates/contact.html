@@ -32,37 +32,73 @@
 <body class="index-page">
 
 <header id="header" class="header fixed-top">
-  <div class="topbar d-flex align-items-center">
-    <div class="container d-flex justify-content-start justify-content-md-between">
-      <div class="contact-info d-flex align-items-center">
-        <i class="bi bi-phone d-flex align-items-center d-none d-lg-block"><span style="color:black">+91 7070776890</span></i>
-        <i class="bi bi-clock ms-4 d-none d-lg-flex align-items-center"><span style="color:black">Mon-Sat: 11:00 AM - 08:00 PM</span></i>
-      </div>
-    </div>
-  </div><!-- End Top Bar -->
-
   <div class="branding d-flex align-items-center">
     <div class="container position-relative d-flex align-items-center justify-content-between">
+
+      <!-- LOGO -->
       <a href="{% url 'home' %}" class="logo d-flex align-items-center">
         <img src="{% static 'assets/img/icon.jpeg' %}" alt="">
-        <h1 class="sitename" style="color:black">Babu's kitchen</h1>
+        <h1 class="sitename ms-2" style="color:orange;">Babu's Kitchen</h1>
       </a>
 
+      <!-- NAVBAR -->
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="{% url 'home' %}#home">Home</a></li>
-          <li><a href="{% url 'home' %}#about">About</a></li>
-          <li><a href="{% url 'home' %}#menu">Menu</a></li>
-          <li><a href="{% url 'home' %}#specials">Specials</a></li>
-          <li><a href="{% url 'home' %}#gallery">Gallery</a></li>
-          <li><a href="#contact" class="active">Contact</a></li>
+          <li><a href="{% url 'home' %}#hero">Home</a></li>
+          <li><a href="{% url 'starterpage' %}">Menu</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+
+          <!-- ✨ AI RECOMMEND BUTTON -->
+          <li><a href="{% url 'ai_recommend' %}">AI Recommend ✨</a></li>
+
+          <!-- 👤 USERNAME PILL DROPDOWN -->
+          {% if user.is_authenticated %}
+          <li class="dropdown">
+            <a href="#"
+               class="btn btn-sm "
+               style="border-radius:20px;">
+              {{ user.username }}
+              <i class="bi bi-chevron-down ms-1"></i>
+            </a>
+
+            <ul>
+              {% if user.is_staff %}
+              <li>
+                <a href="{% url 'admin_dashboard' %}">
+                  Admin Dashboard
+                </a>
+              </li>
+              {% else %}
+              <li>
+                <a href="{% url 'user_dashboard' %}">
+                  My Dashboard
+                </a>
+              </li>
+              {% endif %}
+
+              <li>
+                <a href="{% url 'logout' %}">Logout</a>
+              </li>
+            </ul>
+          </li>
+
+          {% else %}
+          <li>
+            <a href="{% url 'login' %}"
+               class="btn btn-sm "
+               style="border-radius:20px;">
+              Login
+            </a>
+          </li>
+          {% endif %}
         </ul>
+
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
+
     </div>
   </div>
 </header>
-
 <main>
   <section id="contact" class="contact section">
 
@@ -135,7 +171,9 @@
                 <input type="email" class="form-control" placeholder="Your Email" name="email" required>
               </div>
             </div>
-
+             <div class=" form-group mt-3">
+              <input type="text" class="form-control" name="phone" placeholder="Phone Number" required>
+            </div>
             <div class="form-group mt-3">
               <input type="text" class="form-control" name="subject" id="subject" placeholder="Subject" required>
             </div>

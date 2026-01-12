@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Recommendation • Babu's Kitchen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons (VERY IMPORTANT) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Babu's Kitchen MAIN THEME CSS (MOST IMPORTANT) -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+  <style>
+    body{
+      background:#fff7ef;
+      padding-top:100px; /* fixed header space */
+    }
+    .btn-orange{
+      background:#ff8c00;
+      color:white;
+      border:none;
+    }
+    .btn-orange:hover{
+      background:#e67600;
+      color:white;
+    }
+    .card-ai{
+      border-radius:18px;
+    }
+  </style>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>BABU'S KITCHEN</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/icon.jpeg' %}" rel="icon">
+  <link href="{% static 'assets/img/logo.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Satisfy:wght@400&display=swap" rel="stylesheet">
+
+  
+
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header id="header" class="header fixed-top">
+  <div class="branding d-flex align-items-center">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+
+      <!-- LOGO -->
+      <a href="{% url 'home' %}" class="logo d-flex align-items-center">
+        <img src="{% static 'assets/img/icon.jpeg' %}" alt="">
+        <h1 class="sitename ms-2" style="color:orange;">Babu's Kitchen</h1>
+      </a>
+
+      <!-- NAVBAR -->
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="{% url 'home' %}#hero">Home</a></li>
+          <li><a href="{% url 'starterpage' %}">Menu</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+
+          <!-- ✨ AI RECOMMEND BUTTON -->
+          <li><a href="{% url 'ai_recommend' %}">AI Recommend ✨</a></li>
+
+          <!-- 👤 USERNAME PILL DROPDOWN -->
+          {% if user.is_authenticated %}
+          <li class="dropdown">
+            <a href="#"
+               class="btn btn-sm "
+               style="border-radius:20px;">
+              {{ user.username }}
+              <i class="bi bi-chevron-down ms-1"></i>
+            </a>
+
+            <ul>
+              {% if user.is_staff %}
+              <li>
+                <a href="{% url 'admin_dashboard' %}">
+                  Admin Dashboard
+                </a>
+              </li>
+              {% else %}
+              <li>
+                <a href="{% url 'user_dashboard' %}">
+                  My Dashboard
+                </a>
+              </li>
+              {% endif %}
+
+              <li>
+                <a href="{% url 'logout' %}">Logout</a>
+              </li>
+            </ul>
+          </li>
+
+          {% else %}
+          <li>
+            <a href="{% url 'login' %}"
+               class="btn btn-sm "
+               style="border-radius:20px;">
+              Login
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+  </div>
+</header>
+
+<!-- ================= AI CARD ================= -->
+<div class="container py-5">
+  <div class="card shadow border-0 card-ai mx-auto" style="max-width:820px;">
+    <div class="card-body p-4">
+
+      <div class="text-center mb-4">
+        <img src="{% static 'assets/img/icon.jpeg' %}" width="70">
+        <h3 class="mt-2">Babu’s Kitchen AI</h3>
+        <p class="text-muted">Pure Veg • Smart Recommendations</p>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label>Mood</label>
+            <select name="mood" class="form-select" required>
+              <option value="">Select</option>
+              <option value="hungry">Very Hungry</option>
+              <option value="light">Light Meal</option>
+              <option value="family">Family Dinner</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Spice Level</label>
+            <select name="spice" class="form-select" required>
+              <option value="">Select</option>
+              <option value="mild">Mild</option>
+              <option value="medium">Medium</option>
+              <option value="spicy">Spicy</option>
+            </select>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label>Budget</label>
+            <select name="budget" class="form-select" required>
+              <option value="">Select</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-orange w-100 mt-2">
+          Get AI Recommendation
+        </button>
+      </form>
+
+      {% if recommendation %}
+      <hr class="my-4">
+
+      <h4 class="text-center mb-3">AI Recommended Menu</h4>
+
+      <div class="row text-center">
+        <div class="col-md-4">
+          <div class="card p-3 shadow-sm">
+            <h5>Starter</h5>
+            <p class="fw-bold">{{ recommendation.starter }}</p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card p-3 shadow-sm">
+            <h5>Main Course</h5>
+            <p class="fw-bold">{{ recommendation.main }}</p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card p-3 shadow-sm">
+            <h5>Drink</h5>
+            <p class="fw-bold">{{ recommendation.drink }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning mt-4">
+        <strong>Why this choice?</strong><br>
+        {{ recommendation.reason }}
+      </div>
+
+      <a href="{% url 'form' %}" class="btn btn-orange w-100">
+        Book a Table
+      </a>
+      {% endif %}
+
+      {% if error %}
+      <div class="alert alert-danger mt-3">{{ error }}</div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+
+</body>
+</html>

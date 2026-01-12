@@ -1,111 +1,240 @@
-{% load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Babu's Kitchen</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Admin Dashboard • Babu's Kitchen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
-    body { background-color: #121212; color: #fff; }
-    .sidebar { height: 100vh; background: #1f1f1f; padding-top: 20px; position: fixed; width: 250px; }
-    .sidebar a { color: #bbb; display: block; padding: 12px; text-decoration: none; transition: 0.3s; }
-    .sidebar a:hover { background: #333; color: #fff; }
-    .content { margin-left: 250px; padding: 20px; }
-    .card { background: #1e1e1e; border: none; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
-    .navbar { background: #1f1f1f; }
+    body{
+      background:#fff7ef;
+      font-family:'Poppins',sans-serif;
+    }
+    .text-orange{color:#ff8c00;}
+    .bg-orange{background:#ff8c00;}
+    .card-ui{border-radius:16px;border:none;}
+    .stat-card{background:white;border-left:6px solid #ff8c00;}
+    .table thead{background:#ff8c00;color:white;}
+    .badge-booked{background:#28a745;}
+    .badge-cancelled{background:#dc3545;}
+
+    /* 🔥 TRANSPARENT NAVBAR (AI + USER STYLE) */
+    .navbar{
+      background:rgba(255,255,255,0.7) !important;
+      backdrop-filter: blur(8px);
+      box-shadow:0 4px 12px rgba(0,0,0,.05);
+    }
   </style>
 </head>
 
-{% if messages %}
-  <div class="container mt-3">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
+<body>
+
+<!-- 🔶 NAVBAR -->
+<nav class="navbar navbar-expand-lg fixed-top px-4">
+  <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+    <img src="{% static 'assets/img/icon.jpeg' %}" width="38" class="me-2">
+    <strong class="text-orange">Babu's Kitchen</strong>
+  </a>
+
+  <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#adminNav">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="adminNav">
+    <ul class="navbar-nav ms-auto align-items-center gap-3">
+
+      <li><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+      <li><a class="nav-link" href="{% url 'starterpage' %}">Menu</a></li>
+      <li><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
+      <li><a class="nav-link" href="{% url 'ai_recommend' %}">AI Recommend ✨</a></li>
+
+      <!-- USERNAME DROPDOWN -->
+      <li class="dropdown">
+        <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown">
+          {{ user.username }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item active">Admin Dashboard</a></li>
+          <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+      </li>
+
+    </ul>
   </div>
-{% endif %}
+</nav>
 
+<div style="height:90px;"></div>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h4 class="text-center text-light">🍴 Babu's Kitchen</h4>
-    <a href="{% url "dashboard" %}">Dashboard</a>
-    <a href="{% url "contact" %}">Contact</a>
-    <a href="{% url "form" %}">Book a table</a>
-    <a href="{% url 'home' %}#menu">Menu</a>
-    <a href="{% url 'home' %}#gallery">Gallery</a>
-    <a href="{% url 'logout' %}#logout">Logout</a>
-  </div>
+<!-- 🔶 MAIN CONTAINER -->
+<div class="container my-4">
 
-  <!-- Content -->
-  <div class="content">
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark mb-4">
-      <div class="container-fluid">
-        <span class="navbar-brand">Dashboard</span>
-        <a href="/logout" class="btn btn-danger">Logout</a>
-      </div>
-    </nav>
-
-    <!-- Stats Cards -->
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="card p-3">
-          <h5>Total Reservations</h5>
-          <h2 class="text-info">{{ total_reservations }}</h2>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card p-3">
-          <h5>Total Contacts</h5>
-          <h2 class="text-warning">{{ total_contacts }}</h2>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card p-3">
-          <h5>Today’s Visitors</h5>
-          <h2 class="text-success">{{ todays_visitors }}</h2>
-        </div>
+  <!-- 🔹 STATS -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card card-ui stat-card p-3 shadow-sm">
+        <h6>Total Bookings</h6>
+        <h3 class="text-orange">{{ total_bookings }}</h3>
       </div>
     </div>
+    <div class="col-md-3">
+      <div class="card card-ui stat-card p-3 shadow-sm">
+        <h6>Today’s Bookings</h6>
+        <h3 class="text-orange">{{ today_bookings }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-ui stat-card p-3 shadow-sm">
+        <h6>Cancelled</h6>
+        <h3 class="text-orange">{{ cancelled_bookings }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-ui stat-card p-3 shadow-sm">
+        <h6>Total Users</h6>
+        <h3 class="text-orange">{{ total_users }}</h3>
+      </div>
+    </div>
+  </div>
 
-    <!-- Tables Section -->
-    <div class="mt-5">
-      <div class="card p-4">
-        <h4>Recent Bookings</h4>
-        <table class="table table-dark table-hover mt-3">
+  <!-- 🔹 BOOKINGS CRUD -->
+  <div class="card card-ui shadow-sm mb-4">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="mb-1">Bookings Management</h4>
+          <p class="text-muted mb-0">Create • Update • Cancel • Delete</p>
+        </div>
+
+        <!-- ✅ ADD -->
+        <a href="{% url 'admin_add_booking' %}" class="btn btn-success">
+          <i class="bi bi-plus-circle"></i> Add Booking
+        </a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>User</th>
               <th>Date</th>
-              <th>Guests</th>
+              <th>People</th>
+              <th>Message</th>
               <th>Status</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
-  <tbody>
-  {% for booking in recent_bookings %}
-  <tr>
-    <td>{{ booking.name }}</td>
-    <td>{{ booking.date }}</td>
-    <td>{{ booking.people }}</td>
-    <td>{{ booking.subject }}</td>
-  </tr>
-  {% empty %}
-  <tr>
-    <td colspan="4" class="text-center">No bookings found</td>
-  </tr>
-  {% endfor %}
-</tbody>
 
+          <tbody>
+          {% for booking in bookings %}
+            <tr>
+              <td>{{ booking.name }}</td>
+              <td>{{ booking.date|date:"d M Y H:i" }}</td>
+              <td>{{ booking.people }}</td>
+              <td>{{ booking.message|truncatechars:30 }}</td>
+              <td>
+                {% if booking.status == 'booked' %}
+                  <span class="badge badge-booked">Booked</span>
+                {% else %}
+                  <span class="badge badge-cancelled">Cancelled</span>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+
+                <!-- ✏️ EDIT -->
+                <a href="{% url 'admin_edit_booking' booking.id %}"
+                   class="btn btn-sm btn-outline-primary">
+                  Edit
+                </a>
+
+                <!-- ❌ CANCEL -->
+                {% if booking.status == "booked" %}
+                <a href="{% url 'admin_cancel_booking' booking.id %}"
+                  class="btn btn-danger btn-sm">
+                  Cancel
+                </a>
+
+                {% endif %}
+
+                <!-- 🗑 DELETE -->
+                <form method="post"
+                      action="{% url 'admin_delete_booking' booking.id %}"
+                      style="display:inline;">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Delete permanently?');">
+                    Delete
+                  </button>
+                </form>
+
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">
+                No bookings found
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
         </table>
       </div>
     </div>
+  </div>
+  <!-- 🔹 CONTACT / ENQUIRIES -->
+<div class="card card-ui shadow-sm mb-4">
+  <div class="card-body">
+
+    <div class="mb-3">
+      <h4 class="mb-1">Contact Enquiries</h4>
+      <p class="text-muted mb-0">Messages from Contact Page</p>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% for enquiry in enquiries %}
+          <tr>
+            <td>{{ enquiry.name }}</td>
+            <td>{{ enquiry.email }}</td>
+            <td>{{ enquiry.phone }}</td>
+            <td>{{ enquiry.subject }}</td>
+            <td>{{ enquiry.message|truncatechars:30 }}</td>
+            <td>{{ enquiry.date|date:"d M Y H:i" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">
+              No contact enquiries found
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

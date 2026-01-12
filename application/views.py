@@ -1,126 +1,279 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from .models import enquiry_table, enquiry_table_1  
+from django.contrib.auth.models import User
 from django.utils.timezone import now
+from django.views.decorators.http import require_POST
+from datetime import timedelta
+import os, json
 
-from .models import enquiry_table, SafeName
+from .models import enquiry_table, enquiry_table_1
+from openai import OpenAI
 
-from django.core.paginator import Paginator
-from django.http import HttpResponseForbidden
 
+# =========================
+# 🌐 PUBLIC PAGES
+# =========================
 
 def home(request):
     return render(request, 'index.html')
 
-
 def starterpage(request):
     return render(request, 'starterpage.html')
 
-
-
 def contact(request):
     if request.method == 'POST':
-        name = request.POST.get('name', '')
-        email = request.POST.get('email', '')
-        phone = request.POST.get('phone', '')
-        subject = request.POST.get('subject', '')
-        message = request.POST.get('message', '')
-
-        
         enquiry_table_1.objects.create(
-                name=name, email=email, phone=phone, subject=subject, message=message
+            name=request.POST.get('name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone'),
+            subject=request.POST.get('subject'),
+            message=request.POST.get('message'),
         )
-        messages.success(request, "Your enquiry was submitted successfully!")
-        # except Exception as exc:
-        #     messages.error(request, "Failed to submit enquiry: %s" % exc)
+        messages.success(request, "Enquiry submitted successfully")
         return redirect('contact')
+
     return render(request, 'contact.html')
 
 
+# =========================
+# 🍽️ TABLE BOOKING (USER)
+# =========================
 
-
+@login_required(login_url='login')
 def form(request):
     if request.method == 'POST':
-        name = request.POST.get('name', '')
-        email = request.POST.get('email', '')
-        phone = request.POST.get('phone', '')
-        subject = request.POST.get('subject', '')
-        message = request.POST.get('message', '')
-        people = request.POST.get('people') or request.POST.get('person') or request.POST.get('guests') or 0
-        
         enquiry_table.objects.create(
-            name=name, email=email, phone=phone, subject=subject, message=message, people=int(people) if str(people).isdigit() else 0
+            name=request.user.username,
+            email=request.user.email,
+            phone=request.POST.get('phone'),
+            subject="Table Booking",
+            message=request.POST.get('message'),
+            people=int(request.POST.get('people') or 1),
         )
-        messages.success(request, "Your table booking was successful!")
-        return redirect('form')
+        messages.success(request, "Table booked successfully")
+        return redirect('user_dashboard')
+
     return render(request, 'form.html')
 
 
+# =========================
+# 🔐 AUTHENTICATION
+# =========================
 
 def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            auth_login(request, user)
-            messages.success(request, 'Login successful. Welcome!')
-            return redirect('dashboard')
+    if request.method == "POST":
+        user = authenticate(
+            request,
+            username=request.POST.get('username'),
+            password=request.POST.get('password')
+        )
+
+        if user:
+            login(request, user)
+            return redirect('dashboard_redirect')
         else:
-            messages.error(request, 'Incorrect username or password.')
+            messages.error(request, "Invalid username or password")
+
     return render(request, 'login.html')
 
 
-def logout_view(request):
-    auth_logout(request)
-    messages.info(request, 'Logged out.')
-    return redirect('login')
-
-
 def signup_view(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Account created. Please log in.')
-            return redirect('login')
-    else:
-        form = UserCreationForm()
-    return render(request, 'signup.html', {'form': form})
+    if request.method == "POST":
+        if User.objects.filter(username=request.POST.get('username')).exists():
+            messages.error(request, "Username already exists")
+            return redirect('signup')
+
+        user = User.objects.create_user(
+            username=request.POST.get('username'),
+            email=request.POST.get('email'),
+            password=request.POST.get('password')
+        )
+
+        if request.POST.get("role") == "admin":
+            user.is_staff = True
+            user.save()
+
+        messages.success(request, "Account created. Please login.")
+        return redirect("login")
+
+    return render(request, "signup.html")
 
 
-@login_required(login_url='login')
-def dashboard(request):
-    # Count total reservations (enquiry_table)
-    total_reservations = enquiry_table.objects.count()
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 
-    # Count total contacts (enquiry_table_1)
-    total_contacts = enquiry_table_1.objects.count()
 
-    # Count today's visitors (based on date in enquiry_table)
-    todays_visitors = enquiry_table.objects.filter(date__date=now().date()).count()
+# =========================
+# 🔁 DASHBOARD REDIRECT
+# =========================
+
+@login_required
+def dashboard_redirect(request):
+    if request.user.is_staff:
+        return redirect('admin_dashboard')
+    return redirect('user_dashboard')
+
+
+# =========================
+# 👤 USER DASHBOARD
+# =========================
+
+@login_required
+def user_dashboard(request):
+    bookings = enquiry_table.objects.filter(
+        email=request.user.email
+    ).order_by('-date')
+
+    return render(request, 'user_dashboard.html', {
+        'bookings': bookings
+    })
+
+
+@login_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(
+        enquiry_table,
+        id=booking_id,
+        email=request.user.email
+    )
+
+    booking.status = 'cancelled'
+    booking.save()
+
+    messages.success(request, "Booking cancelled")
+    return redirect('user_dashboard')
+
+
+# =========================
+# 🛠️ ADMIN DASHBOARD
+# =========================
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        return redirect('login')
+
+    today_start = now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
 
     context = {
-        'total_reservations': total_reservations,
-        'total_contacts': total_contacts,
-        'todays_visitors': todays_visitors,
-        'recent_bookings': enquiry_table.objects.order_by('-date')[:5],  # latest 5
+        'bookings': enquiry_table.objects.all().order_by('-date'),
+        'users': User.objects.filter(is_staff=False),
+        'enquiries': enquiry_table_1.objects.all().order_by('-id')[:10],
+        'total_bookings': enquiry_table.objects.count(),
+        'today_bookings': enquiry_table.objects.filter(
+            date__gte=today_start,
+            date__lt=today_end
+        ).count(),
+        'cancelled_bookings': enquiry_table.objects.filter(status='cancelled').count(),
+        'total_users': User.objects.filter(is_staff=False).count(),
     }
+
     return render(request, 'dashboard.html', context)
-@login_required(login_url='login')
-def submissions(request):
-    # Only allow staff (admin)
+
+
+@login_required
+def admin_add_booking(request):
     if not request.user.is_staff:
-        messages.error(request, "You do not have permission to view submissions.")
-        return redirect('dashboard')
-    # Fetch bookings and enquiries with simple pagination
-    bookings_qs = enquiry_table.objects.order_by('-date')
-    contacts_qs = enquiry_table_1.objects.order_by('-date')
-    bookings_page = request.GET.get('bpage', 1)
-    contacts_page = request.GET.get('cpage', 1)
-    bookings = Paginator(bookings_qs, 10).get_page(bookings_page)
-    contacts = Paginator(contacts_qs, 10).get_page(contacts_page)
-    return render(request, 'submissions.html', {'bookings': bookings, 'contacts': contacts})
+        return redirect('login')
+
+    if request.method == "POST":
+        enquiry_table.objects.create(
+            name=request.POST.get('name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone'),
+            people=request.POST.get('people'),
+            subject=request.POST.get('subject'),
+            message=request.POST.get('message'),
+        )
+        messages.success(request, "Booking added")
+        return redirect('admin_dashboard')
+
+    return render(request, 'admin_add_booking.html')
+
+
+@login_required
+def admin_edit_booking(request, booking_id):
+    if not request.user.is_staff:
+        return redirect('login')
+
+    booking = get_object_or_404(enquiry_table, id=booking_id)
+
+    if request.method == "POST":
+        booking.people = request.POST.get('people')
+        booking.message = request.POST.get('message')
+        booking.status = request.POST.get('status')
+        booking.save()
+
+        messages.success(request, "Booking updated")
+        return redirect('admin_dashboard')
+
+    return render(request, 'admin_edit_booking.html', {'booking': booking})
+
+
+@login_required
+def admin_cancel_booking(request, booking_id):
+    if not request.user.is_staff:
+        messages.error(request, "Unauthorized")
+        return redirect('login')
+
+    booking = get_object_or_404(enquiry_table, id=booking_id)
+    booking.status = 'cancelled'
+    booking.save()
+
+    messages.success(request, "Booking cancelled successfully")
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_delete_booking(request, booking_id):
+    if not request.user.is_staff:
+        return redirect('login')
+
+    enquiry_table.objects.filter(id=booking_id).delete()
+    messages.success(request, "Booking deleted")
+    return redirect('admin_dashboard')
+
+
+# =========================
+# 🤖 AI RECOMMENDATION
+# =========================
+
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
+
+@login_required
+def ai_recommend(request):
+    recommendation = None
+    error = None
+
+    if request.method == "POST":
+        try:
+            prompt = f"""
+Pure vegetarian Indian food recommendation.
+Mood: {request.POST.get('mood')}
+Spice: {request.POST.get('spice')}
+Budget: {request.POST.get('budget')}
+
+Return JSON only:
+{{"starter":"","main":"","drink":"","reason":""}}
+"""
+
+            res = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            recommendation = json.loads(res.choices[0].message.content)
+
+        except Exception as e:
+            error = str(e)
+
+    return render(request, "ai_recommend.html", {
+        "recommendation": recommendation,
+        "error": error
+    })
